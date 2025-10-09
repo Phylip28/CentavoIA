@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field
 
 class Transaction(BaseModel):
-    id_transaccion: str
-    monto: float = Field(gt=0, description="Amount must be positive")
-    fecha: str
-    categoría: str
-    id_usuario: str
+    id_transaction: str
+    amount: float = Field(gt=0, description="Amount must be positive")
+    date: str
+    category: str
+    user_id: str
