@@ -10,7 +10,7 @@ class SimplePeakDetectionStrategy:
         daily_spend = {}
 
         for transaction in transactions:
-            daily_spend[transaction['fecha']] = daily_spend.get(transaction['fecha'], 0) + transaction['monto']
+            daily_spend[transaction['date']] = daily_spend.get(transaction['date'], 0) + transaction['amount']
 
         peaks = [
             {"date": date, "total": total}
