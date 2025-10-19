@@ -1,7 +1,8 @@
+# Aplication dependences
 fastapi
 pandas
 scikit-learn
 sqlalchemy
 uvicorn
 pydantic
-dot-env
+python-dotenv
