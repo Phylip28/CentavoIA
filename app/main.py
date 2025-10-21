@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.domain.analysis.analysis_models import AnalysisReport
+from app.domain.analysis.analysis_ports import AnalysisServicePort
 from app.adapters.persistence.analysis.logging_report_repository import LogginReportRepository
 from app.domain.analysis.analysis_service import AnalyzeServiceImplementation
 from app.adapters.api.analysis import analysis_controller
@@ -10,7 +10,7 @@ app = FastAPI(
     version="0.1.0"
 )
 
-def createAnalysisService() -> AnalysisReport:
+def createAnalysisService() -> AnalysisServicePort:
     
     repository = LogginReportRepository()
     service = AnalyzeServiceImplementation(repository=repository)
