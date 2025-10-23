@@ -1,5 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
+from typing import Dict, Any
 
 
 @dataclass(frozen=True)
@@ -18,3 +19,4 @@ class AnalysisReport:
     user_id: str
     total_transaction: int
     total_spent: float
+    strategy_results: Dict[str, Any] = field(default_factory=dict)
