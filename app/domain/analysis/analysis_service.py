@@ -1,8 +1,10 @@
+import logging
 from app.domain.analysis.analysis_ports import AnalysisServicePort, ReportRepositoryPort
 from typing import List
 from app.domain.analysis.analysis_models import Transaction, AnalysisReport
 from app.domain.analysis.analysis_strategies import AnalysisStrategy
 
+log = logging.getLogger(__name__)
 
 class AnalyzeServiceImplementation(AnalysisServicePort):
 
@@ -12,7 +14,7 @@ class AnalyzeServiceImplementation(AnalysisServicePort):
 
     def analyze_transactions(self, transactions: List[Transaction]) -> AnalysisReport:
 
-        print(f"Start analysis of {len(self._strategies)} strategies")
+        log.info(f"Start analysis of {len(self._strategies)} strategies")
 
         total_spent = sum(t.amount for t in transactions)
         user_id = transactions[0].user_id if transactions else "Unknown"
@@ -25,6 +27,8 @@ class AnalyzeServiceImplementation(AnalysisServicePort):
 
         for strategy in self._strategies:
             strategy.analyze(transactions=transactions, report=report)
+        
+        log.info("Analysis complete and save.")
 
         self._repository.save(report)
 

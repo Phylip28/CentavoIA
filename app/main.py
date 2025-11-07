@@ -1,10 +1,14 @@
 from fastapi import FastAPI
+import logging
+from app.core.config import settings
 from typing import List
 from app.domain.analysis.analysis_ports import AnalysisServicePort
 from app.adapters.persistence.analysis.logging_report_repository import LogginReportRepository
 from app.domain.analysis.analysis_service import AnalyzeServiceImplementation
 from app.adapters.api.analysis import analysis_controller
 from app.domain.analysis.analysis_strategies import AnalysisStrategy, AntSpendingStrategy
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(
     title="Centavo IA Analysis Module",
@@ -16,11 +20,12 @@ app = FastAPI(
 def createAnalysisService() -> AnalysisServicePort:
 
     repository = LogginReportRepository()
+
     active_strategies: List[AnalysisStrategy] = [
-        AntSpendingStrategy(ant_threshold=50.0)
+        AntSpendingStrategy(ant_threshold=settings.ANT_SPENDING_THRESHOLD)
     ]
     service = AnalyzeServiceImplementation(
-        repository=repository, strategies=active_strategies
+        repository=repository, strategies=active_strategies 
     )
 
     return service
