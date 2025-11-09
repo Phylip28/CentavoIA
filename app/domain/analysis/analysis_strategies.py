@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Tuple
+
 from app.domain.analysis.analysis_models import Transaction
-from typing import List, Dict, Any, Tuple
 
 
 class AnalysisStrategy(ABC):

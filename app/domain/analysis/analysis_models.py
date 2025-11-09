@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 class DomainError(Exception):

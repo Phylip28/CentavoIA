@@ -1,14 +1,24 @@
 import logging
+from typing import Any, Dict, List
+
+from app.domain.analysis.analysis_models import (
+    AnalysisReport,
+    EmptyTransactionListError,
+    Transaction,
+)
 from app.domain.analysis.analysis_ports import AnalysisServicePort, ReportRepositoryPort
-from typing import List, Dict, Any
-from app.domain.analysis.analysis_models import Transaction, AnalysisReport, EmptyTransactionListError
 from app.domain.analysis.analysis_strategies import AnalysisStrategy
 
 log = logging.getLogger(__name__)
 
+
 class AnalyzeServiceImplementation(AnalysisServicePort):
 
-    def __init__(self, repository: ReportRepositoryPort, strategies: List[AnalysisStrategy]):
+    def __init__(
+        self,
+        repository: ReportRepositoryPort,
+        strategies: List[AnalysisStrategy]
+    ):
         self._repository = repository
         self._strategies = strategies
 
@@ -37,6 +47,5 @@ class AnalyzeServiceImplementation(AnalysisServicePort):
 
         self._repository.save(report)
         log.info("Analysis complete and save.")
-        
+
         return report
-    

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
-from app.domain.analysis.analysis_models import Transaction, AnalysisReport
+
+from app.domain.analysis.analysis_models import AnalysisReport, Transaction
 
 
 class AnalysisServicePort(ABC):

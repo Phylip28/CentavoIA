@@ -1,8 +1,9 @@
 import json
 import logging
 from dataclasses import asdict
-from app.domain.analysis.analysis_ports import ReportRepositoryPort
+
 from app.domain.analysis.analysis_models import AnalysisReport
+from app.domain.analysis.analysis_ports import ReportRepositoryPort
 
 log = logging.getLogger(__name__)
 

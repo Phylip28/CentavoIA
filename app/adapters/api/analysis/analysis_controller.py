@@ -1,8 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
-from app.domain.analysis.analysis_ports import AnalysisServicePort
-from app.domain.analysis.analysis_models import EmptyTransactionListError, Transaction
-from app.adapters.api.analysis.analysis_schema import TransactionSchema, AnalysisReportSchema
 from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.adapters.api.analysis.analysis_schema import (
+    AnalysisReportSchema,
+    TransactionSchema,
+)
+from app.domain.analysis.analysis_models import EmptyTransactionListError, Transaction
+from app.domain.analysis.analysis_ports import AnalysisServicePort
 
 router = APIRouter(
     prefix="/analysis",

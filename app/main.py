@@ -1,12 +1,19 @@
-from fastapi import FastAPI
 import logging
-from app.core.config import settings
 from typing import List
-from app.domain.analysis.analysis_ports import AnalysisServicePort
-from app.adapters.persistence.analysis.logging_report_repository import LogginReportRepository
-from app.domain.analysis.analysis_service import AnalyzeServiceImplementation
+
+from fastapi import FastAPI
+
 from app.adapters.api.analysis import analysis_controller
-from app.domain.analysis.analysis_strategies import AnalysisStrategy, AntSpendingStrategy
+from app.adapters.persistence.analysis.logging_report_repository import (
+    LogginReportRepository,
+)
+from app.core.config import settings
+from app.domain.analysis.analysis_ports import AnalysisServicePort
+from app.domain.analysis.analysis_service import AnalyzeServiceImplementation
+from app.domain.analysis.analysis_strategies import (
+    AnalysisStrategy,
+    AntSpendingStrategy,
+)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -25,13 +32,15 @@ def createAnalysisService() -> AnalysisServicePort:
         AntSpendingStrategy(ant_threshold=settings.ANT_SPENDING_THRESHOLD)
     ]
     service = AnalyzeServiceImplementation(
-        repository=repository, strategies=active_strategies 
+        repository=repository, strategies=active_strategies
     )
 
     return service
 
 
-app.dependency_overrides[analysis_controller.get_analysis_service] = createAnalysisService
+app.dependency_overrides[
+    analysis_controller.get_analysis_service
+] = createAnalysisService
 
 app.include_router(analysis_controller.router)
 
