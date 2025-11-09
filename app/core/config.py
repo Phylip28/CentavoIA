@@ -6,5 +6,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     ANT_SPENDING_THRESHOLD: float = 50.0
+    PEAK_SPENDING_THRESHOLD: float = 150.0
 
 settings = Settings()

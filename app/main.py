@@ -13,6 +13,7 @@ from app.domain.analysis.analysis_service import AnalyzeServiceImplementation
 from app.domain.analysis.analysis_strategies import (
     AnalysisStrategy,
     AntSpendingStrategy,
+    PeakSpendingStrategy,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -20,16 +21,16 @@ logging.basicConfig(level=logging.INFO)
 app = FastAPI(
     title="Centavo IA Analysis Module",
     description="Analysis Service for Expense Patterns",
-    version="0.1.0"
+    version="0.1.0",
 )
 
 
 def createAnalysisService() -> AnalysisServicePort:
-
     repository = LogginReportRepository()
 
     active_strategies: List[AnalysisStrategy] = [
-        AntSpendingStrategy(ant_threshold=settings.ANT_SPENDING_THRESHOLD)
+        AntSpendingStrategy(ant_threshold=settings.ANT_SPENDING_THRESHOLD),
+        PeakSpendingStrategy(peak_threshold=settings.PEAK_SPENDING_THRESHOLD),
     ]
     service = AnalyzeServiceImplementation(
         repository=repository, strategies=active_strategies
@@ -38,9 +39,9 @@ def createAnalysisService() -> AnalysisServicePort:
     return service
 
 
-app.dependency_overrides[
-    analysis_controller.get_analysis_service
-] = createAnalysisService
+app.dependency_overrides[analysis_controller.get_analysis_service] = (
+    createAnalysisService
+)
 
 app.include_router(analysis_controller.router)
 

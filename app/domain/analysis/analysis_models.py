@@ -27,6 +27,6 @@ class Transaction:
 class AnalysisReport:
 
     user_id: str
-    total_transaction: int
+    total_transactions: int
     total_spent: float
     strategy_results: Dict[str, Any] = field(default_factory=dict)

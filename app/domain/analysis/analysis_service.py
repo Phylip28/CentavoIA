@@ -40,7 +40,7 @@ class AnalyzeServiceImplementation(AnalysisServicePort):
 
         report = AnalysisReport(
             user_id=user_id,
-            total_transaction=len(transactions),
+            total_transactions=len(transactions),
             total_spent=total_spent,
             strategy_results=strategy_results
         )
