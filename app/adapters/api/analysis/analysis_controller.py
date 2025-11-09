@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.domain.analysis.analysis_ports import AnalysisServicePort
-from app.domain.analysis.analysis_models import AnalysisReport, Transaction
-from app.adapters.api.analysis.analysis_schema import TransactionSchema
+from app.domain.analysis.analysis_models import EmptyTransactionListError, Transaction
+from app.adapters.api.analysis.analysis_schema import TransactionSchema, AnalysisReportSchema
 from typing import List
 
 router = APIRouter(
@@ -14,11 +14,11 @@ def get_analysis_service() -> AnalysisServicePort:
     raise NotImplementedError("Dependency not injected")
 
 
-@router.post("/", response_model=AnalysisReport)
+@router.post("/", response_model=AnalysisReportSchema)
 async def run_analysis(
     transaction_schemas: List[TransactionSchema],
     service: AnalysisServicePort = Depends(get_analysis_service)
-) -> AnalysisReport:
+) -> AnalysisReportSchema:
 
     try:
         transactions: List[Transaction] = [
@@ -32,10 +32,14 @@ async def run_analysis(
             for t in transaction_schemas
         ]
 
+        report = service.analyze_transactions(transactions)
+    except EmptyTransactionListError:
+        raise HTTPException(
+            status_code=400, detail="The transaction list is empty."
+        )
     except Exception as e:
         raise HTTPException(
-            status_code=400, detail=f"Error processing data: {e}")
+            status_code=500, detail=str(e)
+        )
 
-    report = service.analyze_transactions(transactions)
-
-    return report
+    return AnalysisReportSchema.model_validate(report)

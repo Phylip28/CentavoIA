@@ -1,7 +1,7 @@
 import logging
 from app.domain.analysis.analysis_ports import AnalysisServicePort, ReportRepositoryPort
-from typing import List
-from app.domain.analysis.analysis_models import Transaction, AnalysisReport
+from typing import List, Dict, Any
+from app.domain.analysis.analysis_models import Transaction, AnalysisReport, EmptyTransactionListError
 from app.domain.analysis.analysis_strategies import AnalysisStrategy
 
 log = logging.getLogger(__name__)
@@ -14,22 +14,29 @@ class AnalyzeServiceImplementation(AnalysisServicePort):
 
     def analyze_transactions(self, transactions: List[Transaction]) -> AnalysisReport:
 
+        if not transactions:
+            log.warning("Tried to analyze an empty list of transactions.")
+            raise EmptyTransactionListError()
+
         log.info(f"Start analysis of {len(self._strategies)} strategies")
 
         total_spent = sum(t.amount for t in transactions)
-        user_id = transactions[0].user_id if transactions else "Unknown"
+        user_id = transactions[0].user_id
+
+        strategy_results: Dict[str, Any] = {}
+        for strategy in self._strategies:
+            strategy_name, result = strategy.analyze(transactions)
+            strategy_results[strategy_name] = result
 
         report = AnalysisReport(
             user_id=user_id,
             total_transaction=len(transactions),
             total_spent=total_spent,
+            strategy_results=strategy_results
         )
 
-        for strategy in self._strategies:
-            strategy.analyze(transactions=transactions, report=report)
-        
-        log.info("Analysis complete and save.")
-
         self._repository.save(report)
-
+        log.info("Analysis complete and save.")
+        
         return report
+    

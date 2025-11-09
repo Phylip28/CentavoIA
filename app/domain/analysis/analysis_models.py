@@ -3,6 +3,16 @@ from datetime import date
 from typing import Dict, Any
 
 
+class DomainError(Exception):
+    """Base exception for domain errors."""
+    pass
+
+
+class EmptyTransactionListError(DomainError):
+    """Attempted to analyze an empty list of transactions."""
+    pass
+
+
 @dataclass(frozen=True)
 class Transaction:
 
@@ -13,7 +23,7 @@ class Transaction:
     user_id: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class AnalysisReport:
 
     user_id: str

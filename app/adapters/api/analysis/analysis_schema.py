@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date
+from typing import Dict, Any
 
 
 class TransactionSchema(BaseModel):
@@ -10,5 +11,15 @@ class TransactionSchema(BaseModel):
     category: str
     user_id: str
 
+    class Config:
+        from_attributes = True
+
+class AnalysisReportSchema(BaseModel):
+    
+    user_id: str
+    total_transactions: int
+    total_spent: float
+    strategy_results: Dict[str, Any] = Field(default_factory=dict)
+    
     class Config:
         from_attributes = True

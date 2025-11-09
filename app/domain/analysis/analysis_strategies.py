@@ -1,19 +1,22 @@
 from abc import ABC, abstractmethod
-from app.domain.analysis.analysis_models import Transaction, AnalysisReport
-from typing import List, Dict
+from app.domain.analysis.analysis_models import Transaction
+from typing import List, Dict, Any, Tuple
+
 
 class AnalysisStrategy(ABC):
-    
+
     @abstractmethod
-    def analyze(self, transactions: List[Transaction], report: AnalysisReport) -> None:
+    def analyze(self, transactions: List[Transaction]) -> Tuple[str, Any]:
         raise NotImplementedError()
-    
+
+
 class AntSpendingStrategy(AnalysisStrategy):
 
     def __init__(self, ant_threshold: float = 30.0):
         self._threshold = ant_threshold
+        self.strategy_name = "ant_spending"
 
-    def analyze(self, transactions: List[Transaction], report: AnalysisReport) -> None:
+    def analyze(self, transactions: List[Transaction]) -> Tuple[str, Any]:
 
         ant_spending_by_category: Dict[str, float] = {}
         total_ant_spending = 0.0
@@ -24,7 +27,9 @@ class AntSpendingStrategy(AnalysisStrategy):
                 ant_spending_by_category[t.category] += t.amount
                 total_ant_spending += t.amount
 
-        report.strategy_results["ant_spending"] = {
+        results = {
             "total_spent": total_ant_spending,
             "by_category": ant_spending_by_category
         }
+
+        return (self.strategy_name, results)
