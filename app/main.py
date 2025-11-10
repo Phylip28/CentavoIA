@@ -14,6 +14,7 @@ from app.domain.analysis.analysis_strategies import (
     AnalysisStrategy,
     AntSpendingStrategy,
     PeakSpendingStrategy,
+    RecurrenceStrategy,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -31,6 +32,10 @@ def createAnalysisService() -> AnalysisServicePort:
     active_strategies: List[AnalysisStrategy] = [
         AntSpendingStrategy(ant_threshold=settings.ANT_SPENDING_THRESHOLD),
         PeakSpendingStrategy(peak_threshold=settings.PEAK_SPENDING_THRESHOLD),
+        RecurrenceStrategy(
+            day_tolerance=settings.RECURRENCE_DAY_TOLERANCE,
+            amount_tolerance_percent=settings.RECURRENCE_AMOUNT_TOLERANCE,
+        ),
     ]
     service = AnalyzeServiceImplementation(
         repository=repository, strategies=active_strategies

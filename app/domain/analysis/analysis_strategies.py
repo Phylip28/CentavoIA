@@ -1,6 +1,7 @@
+import math
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from datetime import date
+from datetime import date, timedelta
 from typing import Any, Dict, List, Tuple
 
 from app.domain.analysis.analysis_models import Transaction
@@ -28,7 +29,7 @@ class AntSpendingStrategy(AnalysisStrategy):
                 total_ant_spending += t.amount
 
         results = {
-            "total_spent": total_ant_spending,
+            "total_spent": round(total_ant_spending, 2),
             "by_category": ant_spending_by_category,
         }
 
@@ -60,5 +61,66 @@ class PeakSpendingStrategy(AnalysisStrategy):
                 )
 
         results = {"peak_days_found": len(peak_days), "peaks": peak_days}
+
+        return (self.strategy_name, results)
+
+
+class RecurrenceStrategy(AnalysisStrategy):
+    def __init__(self, day_tolerance: int = 3, amount_tolerance_percent: float = 0.10):
+        self.strategy_name = "recurrence_analysis"
+        self.intervals = {
+            "monthly": (timedelta(days=30), timedelta(days=day_tolerance)),
+            "weekly": (timedelta(days=7), timedelta(days=day_tolerance // 2 or 1)),
+        }
+        self.amount_tolerance = amount_tolerance_percent
+
+    def analyze(self, transactions: List[Transaction]) -> Tuple[str, Any]:
+        categorized_transactions: Dict[str, List[Transaction]] = defaultdict(list)
+        for t in transactions:
+            categorized_transactions[t.category].append(t)
+
+        found_recurrences = []
+
+        for category, trans in categorized_transactions.items():
+            if len(trans) < 2:
+                continue
+
+            sorted_trans = sorted(trans, key=lambda t: t.date)
+
+            for i in range(len(sorted_trans)):
+                for j in range(i + 1, len(sorted_trans)):
+                    t1 = sorted_trans[i]
+                    t2 = sorted_trans[j]
+
+                    if not math.isclose(
+                        t1.amount, t2.amount, rel_tol=self.amount_tolerance
+                    ):
+                        continue
+
+                    time_delta = abs(t2.date - t1.date)
+
+                    for interval_name, (
+                        base_delta,
+                        tolerance_delta,
+                    ) in self.intervals.items():
+                        if (
+                            (base_delta - tolerance_delta)
+                            <= time_delta
+                            <= (base_delta + tolerance_delta)
+                        ):
+                            found_recurrences.append(
+                                {
+                                    "type": interval_name,
+                                    "category": category,
+                                    "amount": t1.amount,
+                                    "date1": t1.date.isoformat(),
+                                    "date2": t2.date.isoformat(),
+                                }
+                            )
+
+        results = {
+            "potential_recurrences_found": len(found_recurrences),
+            "details": found_recurrences,
+        }
 
         return (self.strategy_name, results)

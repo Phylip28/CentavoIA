@@ -7,5 +7,7 @@ class Settings(BaseSettings):
 
     ANT_SPENDING_THRESHOLD: float = 50.0
     PEAK_SPENDING_THRESHOLD: float = 150.0
+    RECURRENCE_DAY_TOLERANCE: int = 3
+    RECURRENCE_AMOUNT_TOLERANCE: float = 0.10
 
 settings = Settings()

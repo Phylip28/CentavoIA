@@ -4,6 +4,7 @@ from app.domain.analysis.analysis_models import Transaction
 from app.domain.analysis.analysis_strategies import (
     AntSpendingStrategy,
     PeakSpendingStrategy,
+    RecurrenceStrategy,
 )
 
 
@@ -75,3 +76,38 @@ def test_peak_spending_strategy_finds_peaks_correctly():
     # Verify second peak (Day 3)
     assert results["peaks"][1]["date"] == "2025-01-03"
     assert results["peaks"][1]["total_spent"] == 200.0
+
+
+def test_recurrence_strategy_finds_subscriptions():
+    """
+    Unit test (RNF-06) for RF-02 logic.
+    Verifies that the recurrence strategy:
+    1. Finds monthly subscriptions.
+    2. Ignores one-time expenses.
+    3. Filters out noise with similar category but different amount/date.
+    """
+    # Arrange: Create test data with recurring and one-time transactions
+    transactions = [
+        # Monthly subscription (similar amount, ~30 days apart)
+        Transaction("t1", 15.99, date(2025, 1, 5), "Subscriptions", "u1"),
+        Transaction(
+            "t2", 15.99, date(2025, 2, 4), "Subscriptions", "u1"
+        ),  # 30 days later
+        # One-time expense
+        Transaction("t3", 200.0, date(2025, 1, 15), "Restaurant", "u1"),
+        # Noise (same category but very different amount and date)
+        Transaction("t4", 5.00, date(2025, 1, 20), "Subscriptions", "u1"),
+    ]
+
+    # Use default configuration (10% amount tolerance, 3 days date tolerance)
+    strategy = RecurrenceStrategy()
+
+    # Act: Execute recurrence detection
+    strategy_name, results = strategy.analyze(transactions)
+
+    # Assert: Verify recurrence detection accuracy
+    assert strategy_name == "recurrence_analysis"
+    assert results["potential_recurrences_found"] == 1
+    assert results["details"][0]["type"] == "monthly"
+    assert results["details"][0]["category"] == "Subscriptions"
+    assert results["details"][0]["amount"] == 15.99
