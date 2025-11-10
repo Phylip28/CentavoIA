@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/python:3.11-bookworm
+    volumes:
+      - ..:/workspaces/CentavoIA:cached
+      
+    environment:
+      - DATABASE_URL=postgresql://vscode:password@db:5432/centavo_db
+      
+    depends_on:
+      - db
+      
+    command: sleep infinity
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: vscode
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: centavo_db
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres_data:
