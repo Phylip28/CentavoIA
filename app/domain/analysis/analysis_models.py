@@ -5,17 +5,18 @@ from typing import Any, Dict
 
 class DomainError(Exception):
     """Base exception for domain errors."""
+
     pass
 
 
 class EmptyTransactionListError(DomainError):
     """Attempted to analyze an empty list of transactions."""
+
     pass
 
 
 @dataclass(frozen=True)
 class Transaction:
-
     transaction_id: str
     amount: float
     date: date
@@ -26,6 +27,7 @@ class Transaction:
 @dataclass(frozen=True)
 class AnalysisReport:
 
+    job_id: str
     user_id: str
     total_transactions: int
     total_spent: float

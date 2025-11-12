@@ -10,15 +10,17 @@ from app.domain.analysis.analysis_ports import AnalysisServicePort
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(name="run_analysis_task")
-def run_analysis_task(raw_transactions: List[Dict[str, Any]]):
+@celery_app.task(name="run_analysis_task", bind=True)
+def run_analysis_task(self, raw_transactions: List[Dict[str, Any]]):
     """
     Asynchronous Celery task that runs analysis in the background.
 
     Receives serializable JSON data (dicts) and performs transaction analysis.
     """
+    job_id: str = self.request.id
+
     logger.info(
-        f"Celery worker: Received task to analyze {len(raw_transactions)} transactions."
+        f"Received task {job_id} to analyze {len(raw_transactions)} transactions."
     )
 
     try:
@@ -29,7 +31,7 @@ def run_analysis_task(raw_transactions: List[Dict[str, Any]]):
             t_data["date"] = date.fromisoformat(t_data["date"])
             transactions.append(Transaction(**t_data))
 
-        service.analyze_transactions(transactions)
+        service.analyze_transactions(transactions, job_id=job_id)
 
         logger.info(
             f"Celery worker: Task completed for user {transactions[0].user_id}."

@@ -34,3 +34,11 @@ class AnalysisJobSchema(BaseModel):
     job_id: str
     status: str = "pending"
     message: str = "Analysis job successfully queued."
+
+
+class JobStatusSchema(BaseModel):
+    job_id: str
+    status: str
+
+    class Config:
+        from_attributes = True

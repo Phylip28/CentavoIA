@@ -5,7 +5,7 @@ from app.adapters.persistence.analysis.sql_report_repository import (
 )
 from app.adapters.persistence.database import SessionLocal
 from app.core.config import settings
-from app.domain.analysis.analysis_ports import AnalysisServicePort
+from app.domain.analysis.analysis_ports import AnalysisServicePort, ReportRepositoryPort
 from app.domain.analysis.analysis_service import AnalyzeServiceImplementation
 from app.domain.analysis.analysis_strategies import (
     AnalysisStrategy,
@@ -40,3 +40,10 @@ def create_analysis_service() -> AnalysisServicePort:
     )
 
     return service
+
+
+def get_report_repository() -> ReportRepositoryPort:
+    """
+    Dependency provider for the Report Repository.
+    """
+    return SQLAlchemyReportRepository(session_factory=SessionLocal)

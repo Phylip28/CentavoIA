@@ -13,17 +13,15 @@ log = logging.getLogger(__name__)
 
 
 class AnalyzeServiceImplementation(AnalysisServicePort):
-
     def __init__(
-        self,
-        repository: ReportRepositoryPort,
-        strategies: List[AnalysisStrategy]
+        self, repository: ReportRepositoryPort, strategies: List[AnalysisStrategy]
     ):
         self._repository = repository
         self._strategies = strategies
 
-    def analyze_transactions(self, transactions: List[Transaction]) -> AnalysisReport:
-
+    def analyze_transactions(
+        self, transactions: List[Transaction], job_id: str
+    ) -> AnalysisReport:
         if not transactions:
             log.warning("Tried to analyze an empty list of transactions.")
             raise EmptyTransactionListError()
@@ -39,10 +37,11 @@ class AnalyzeServiceImplementation(AnalysisServicePort):
             strategy_results[strategy_name] = result
 
         report = AnalysisReport(
+            job_id=job_id,
             user_id=user_id,
             total_transactions=len(transactions),
             total_spent=total_spent,
-            strategy_results=strategy_results
+            strategy_results=strategy_results,
         )
 
         self._repository.save(report)
