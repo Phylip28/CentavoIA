@@ -1,4 +1,4 @@
-from pydantic import PostgresDsn
+from pydantic import PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,5 +14,8 @@ class Settings(BaseSettings):
     RECURRENCE_DAY_TOLERANCE: int = 3
     RECURRENCE_AMOUNT_TOLERANCE: float = 0.10
 
+    CELERY_BROKER_URL: RedisDsn
+    CELERY_RESULT_BACKEND: RedisDsn
 
-settings = Settings() # type: ignore [call-arg]
+
+settings = Settings()  # type: ignore [call-arg]

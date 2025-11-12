@@ -1,23 +1,10 @@
 import logging
 from contextlib import asynccontextmanager
-from typing import List
 
 from fastapi import FastAPI
 
 from app.adapters.api.analysis import analysis_controller
-from app.adapters.persistence.analysis.sql_report_repository import (
-    SQLAlchemyReportRepository,
-)
-from app.adapters.persistence.database import Base, SessionLocal, engine
-from app.core.config import settings
-from app.domain.analysis.analysis_ports import AnalysisServicePort
-from app.domain.analysis.analysis_service import AnalyzeServiceImplementation
-from app.domain.analysis.analysis_strategies import (
-    AnalysisStrategy,
-    AntSpendingStrategy,
-    PeakSpendingStrategy,
-    RecurrenceStrategy,
-)
+from app.adapters.persistence.database import Base, engine
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -35,29 +22,6 @@ app = FastAPI(
     description="Analysis Service for Expense Patterns",
     version="0.1.0",
     lifespan=lifespan,
-)
-
-
-def createAnalysisService() -> AnalysisServicePort:
-    repository = SQLAlchemyReportRepository(session_factory=SessionLocal)
-
-    active_strategies: List[AnalysisStrategy] = [
-        AntSpendingStrategy(ant_threshold=settings.ANT_SPENDING_THRESHOLD),
-        PeakSpendingStrategy(peak_threshold=settings.PEAK_SPENDING_THRESHOLD),
-        RecurrenceStrategy(
-            day_tolerance=settings.RECURRENCE_DAY_TOLERANCE,
-            amount_tolerance_percent=settings.RECURRENCE_AMOUNT_TOLERANCE,
-        ),
-    ]
-    service = AnalyzeServiceImplementation(
-        repository=repository, strategies=active_strategies
-    )
-
-    return service
-
-
-app.dependency_overrides[analysis_controller.get_analysis_service] = (
-    createAnalysisService
 )
 
 app.include_router(analysis_controller.router)

@@ -1,50 +1,35 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException, status
 
 from app.adapters.api.analysis.analysis_schema import (
-    AnalysisReportSchema,
+    AnalysisJobSchema,
     TransactionSchema,
 )
-from app.domain.analysis.analysis_models import EmptyTransactionListError, Transaction
-from app.domain.analysis.analysis_ports import AnalysisServicePort
+from app.domain.analysis.tasks import run_analysis_task
 
-router = APIRouter(
-    prefix="/analysis",
-    tags=["Analysis"]
+router = APIRouter(prefix="/analysis", tags=["Analysis"])
+
+
+@router.post(
+    "/", response_model=AnalysisJobSchema, status_code=status.HTTP_202_ACCEPTED
 )
-
-
-def get_analysis_service() -> AnalysisServicePort:
-    raise NotImplementedError("Dependency not injected")
-
-
-@router.post("/", response_model=AnalysisReportSchema)
-async def run_analysis(
+async def start_analysis_job(
     transaction_schemas: List[TransactionSchema],
-    service: AnalysisServicePort = Depends(get_analysis_service)
-) -> AnalysisReportSchema:
-
-    try:
-        transactions: List[Transaction] = [
-            Transaction(
-                transaction_id=t.transaction_id,
-                amount=t.amount,
-                date=t.date,
-                category=t.category,
-                user_id=t.user_id
-            )
-            for t in transaction_schemas
-        ]
-
-        report = service.analyze_transactions(transactions)
-    except EmptyTransactionListError:
+) -> AnalysisJobSchema:
+    if not transaction_schemas:
         raise HTTPException(
-            status_code=400, detail="The transaction list is empty."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot start analysis with an empty transaction list.",
         )
+    try:
+        raw_transactions = [t.model_dump(mode="json") for t in transaction_schemas]
+        task = run_analysis_task.delay(raw_transactions=raw_transactions)
+
+        return AnalysisJobSchema(job_id=task.id)
+
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=str(e)
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to queue analysis job: {e}",
         )
-
-    return AnalysisReportSchema.model_validate(report)

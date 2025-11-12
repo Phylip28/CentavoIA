@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 
 
 class TransactionSchema(BaseModel):
-
     transaction_id: str
     amount: float
     date: date
@@ -15,8 +14,8 @@ class TransactionSchema(BaseModel):
     class Config:
         from_attributes = True
 
-class AnalysisReportSchema(BaseModel):
 
+class AnalysisReportSchema(BaseModel):
     user_id: str
     total_transactions: int
     total_spent: float
@@ -24,3 +23,14 @@ class AnalysisReportSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AnalysisJobSchema(BaseModel):
+    """
+    Schema for the response of an initiated analysis job.
+    Complies with RF-05a.
+    """
+
+    job_id: str
+    status: str = "pending"
+    message: str = "Analysis job successfully queued."
