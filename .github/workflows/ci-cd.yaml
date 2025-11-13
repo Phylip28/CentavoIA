@@ -62,7 +62,7 @@ jobs:
       - name: Run Linters (Ruff and Mypy)
         run: |
           ruff check app/
-          mypy app/
+          mypy
 
       - name: Run Pytest
         env:
