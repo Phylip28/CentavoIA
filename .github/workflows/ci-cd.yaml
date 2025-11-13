@@ -62,7 +62,7 @@ jobs:
       - name: Run Linters (Ruff and Mypy)
         run: |
           ruff check .
-          mypy --explicit-package-bases --namespace-packages app/
+          mypy --explicit-package-bases --namespace-packages app/     
 
       - name: Run Pytest
         env:
