@@ -1,0 +1,48 @@
+# Central configuration file for Python tools
+
+# --- Formatter Configuration ---
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+# --- Linter Configuration ---
+# This is the new nested structure that 'ruff' prefers
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+# E = Pyflakes Errors
+# W = Pyflakes Warnings
+# F = Flake8 (main rules)
+# I = isort (import sorting)
+select = ["E", "W", "F", "I"]
+
+[tool.ruff.lint.isort]
+# Tell isort that 'app' is our own source code
+known-first-party = ["app"]
+
+# --- Type Checker Configuration ---
+[tool.mypy]
+# Tell mypy to only scan the 'app' directory
+files = ["app"]
+# Tell mypy where to find modules (so 'app.domain...' works)
+mypy_path = "app"
+# CRITICAL: Ignore errors from libs that don't have types
+ignore_missing_imports = true
+
+# --- THIS IS THE KEY FIX FOR MYPY ---
+# This tells mypy to treat directories
+# without __init__.py as packages, which solves
+# the "Source file found twice" error.
+explicit_package_bases = true
+namespace_packages = true
+# ------------------------------------------
+
+
+# --- Testing Configuration ---
+[tool.pytest.ini_options]
+# CRITICAL: Add the 'app' directory to Python's path
+# This allows tests to do 'from app.domain.analysis...'
+pythonpath = ["app"]
+# Tell pytest where to look for tests
+testpaths = ["tests"]

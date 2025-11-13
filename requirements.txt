@@ -1,7 +1,13 @@
+# Web Framework & API
 fastapi
-pandas
-scikit-learn
-sqlalchemy
-uvicorn
+uvicorn[standard]
 pydantic
-dot-env
+pydantic-settings
+
+# Database
+sqlalchemy
+psycopg2-binary
+
+# Queque Tasks
+celery
+redis
