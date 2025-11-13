@@ -6,7 +6,7 @@ line-length = 88
 target-version = ['py311']
 
 # --- Linter Configuration ---
-# Esta es la nueva estructura anidada que 'ruff' prefiere
+# This is the new nested structure that 'ruff' prefers
 [tool.ruff]
 line-length = 88
 
@@ -30,11 +30,13 @@ mypy_path = "app"
 # CRITICAL: Ignore errors from libs that don't have types
 ignore_missing_imports = true
 
-# Esto le dice a mypy que trate los directorios
-# sin __init__.py como paquetes, lo que soluciona
-# el error "Source file found twice".
+# --- THIS IS THE KEY FIX FOR MYPY ---
+# This tells mypy to treat directories
+# without __init__.py as packages, which solves
+# the "Source file found twice" error.
 explicit_package_bases = true
 namespace_packages = true
+# ------------------------------------------
 
 
 # --- Testing Configuration ---
