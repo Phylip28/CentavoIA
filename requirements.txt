@@ -1,12 +1,13 @@
-# Aplication dependences
+# Web Framework & API
 fastapi
-pandas
-sqlalchemy
-uvicorn
+uvicorn[standard]
 pydantic
 pydantic-settings
-python-dotenv
-pytest
+
+# Database
+sqlalchemy
 psycopg2-binary
+
+# Queque Tasks
 celery
 redis

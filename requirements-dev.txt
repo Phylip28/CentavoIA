@@ -1,0 +1,7 @@
+# Testing
+pytest
+
+# Software Quality (Linters & Formatters)
+black
+ruff
+mypy

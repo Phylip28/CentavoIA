@@ -1,0 +1,125 @@
+name: CI/CD Pipeline - Centavo IA
+
+# 1. TRIGGERS
+# Runs on every push or pull request to the 'main' branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # --- JOB 1: CONTINUOUS INTEGRATION (CI) ---
+  # (My pipeline: The "Guardian")
+  test-and-lint:
+    name: Run Linters and Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: vscode
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: centavo_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vscode -d centavo_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          pip install --no-cache-dir -r requirements-dev.txt
+
+      - name: Run Linters (Ruff and Mypy)
+        run: |
+          ruff check app/
+          mypy app/
+
+      - name: Run Pytest
+        env:
+          # Inject environment variables so pytest can connect to services
+          DATABASE_URL: "postgresql://vscode:password@localhost:5432/centavo_db"
+          CELERY_BROKER_URL: "redis://localhost:6379/0"
+          CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+        run: pytest
+
+  # --- JOB 2: CONTINUOUS DEPLOYMENT (CD) ---
+  # (Your pipeline: The "Delivery Person")
+  build-and-push:
+    name: Build and Publish Docker Image
+    runs-on: ubuntu-latest
+    
+    # --- KEY IMPROVEMENT! ---
+    # 1. Dependency: This job will NOT run if 'test-and-lint' fails.
+    needs: test-and-lint 
+    
+    # 2. Condition: Only runs if we're on the 'main' branch
+    #    and it's a 'push' event (i.e., after a successful merge).
+    #    We don't want to publish an image for every 'pull_request'.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # -----------------------------
+
+    permissions:
+      contents: read
+      packages: write # Permission to write to GitHub Packages (GHCR)
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # GitHub's automatic token
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          # Tell it to use the production Dockerfile we created
+          file: ./Dockerfile 
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
